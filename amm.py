@@ -1,17 +1,12 @@
-import shutil
-
-# modules for visualizer
-from scipy.io.wavfile import read
-import matplotlib.pyplot as plt
-
 # modules for recorder
 import wave, pyaudio
 import time # time for time tag
 
 # modules for FFT analysis
-from scipy.fftpack import fft
 from scipy.io import wavfile
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn
 
 
 ########### recorder settings ###########
@@ -19,7 +14,8 @@ CHUNK = 1024
 FORMAT = pyaudio.paInt16
 RATE = 44100
 CHANNELS = 1
-RECORD_SECONDS = 1
+RECORD_SECONDS = 0.5
+drop_range = 0.05
 #########################################
 
 
@@ -71,29 +67,30 @@ def spectrum_analyzer(wav_file):
     sonic_x = np.arange(0,sonic_time,sonic_time/len(sonic_y))
     # plt.plot(sonic_x,sonic_y)
     # plt.show()
-    slice_range = int(0.05*len(sonic_x))
-    t = sonic_x[slice_range:-1*slice_range]
-    s = sonic_y[slice_range:-1*slice_range]
+    slice_range = int(drop_range*len(sonic_x))
+    x = sonic_x[slice_range:-1*slice_range]
+    y = sonic_y[slice_range:-1*slice_range]
 
-    Y = np.fft.fft(s)
-    N = int(len(Y)/2+1)
+    Y = np.fft.fft(y)
+    freqs = np.fft.fftfreq(len(y))*rate
 
-    dt = t[1] - t[0]
-    fa = 1.0/dt # scan frequency
-    X = np.linspace(0, fa/2, N, endpoint=True)
+    idx = np.argmax(np.abs(Y))
+    peak_freq = abs(freqs[idx])
 
-    # print(max(Y))
+    figure = plt.figure(figsize=(10,10))
 
-    plt.plot(X,np.abs(Y[:N]))
-    plt.xlim([10,100])
+    figure1 = figure.add_subplot(211)
+    figure1.plot(x*1000,y)
+    figure1.set_xlabel(r'Time ($ms$)')
+    figure2 = figure.add_subplot(212)
+    figure2.set_xlabel(r'frequency ($Hz$)')
+    figure2.plot(abs(freqs),abs(Y))
+
+    figure.suptitle('peak_freq = {}Hz'.format(peak_freq))
+
     plt.show()
 
-
-
-
 this_record = recorder()
-# visualizer(this_record)
-# spectrum_analyzer('cm-01b-440hz.wav')
 spectrum_analyzer(this_record)
 
 
