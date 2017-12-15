@@ -3,3 +3,4 @@ matplotlib
 scipy
 pyaudio
 seaborn
+wave
