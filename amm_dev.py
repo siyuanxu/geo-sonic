@@ -55,8 +55,18 @@ def spectrum_analyzer(wav_file):
             sonic_y = drop_head_tail(sonic_y)
         return sonic_x, sonic_y, rate
 
-    def select_signal(sonic_x, sonic_y):
-        idx = np.argmax(sonic_y)
+    def select_signal(sonic_x, sonic_y, noise_gate=noise_gate):
+        # use max signal as the start point
+        # idx = np.argmax(sonic_y)
+        # x = sonic_x[idx:(idx + fft_size)]
+        # y = sonic_y[idx:(idx + fft_size)]
+
+        # use noise gate as the start point
+        idx = 0
+        for i in range(len(sonic_x)):
+            if abs(sonic_y[i]) > noise_gate:
+                idx = i
+                break
         x = sonic_x[idx:(idx + fft_size)]
         y = sonic_y[idx:(idx + fft_size)]
         return x, y
@@ -111,15 +121,16 @@ def spectrum_analyzer(wav_file):
 
 
 ########### recorder settings ###########
-RATE = 44100
+RATE = 1024
 CHANNELS = 1
 RECORD_SECONDS = 1.2
-fft_time = 500  # ms
-ng_rate = 0  # noise gate ratiao
-noise_gate = 1000  # specific noise gate value
+fft_time = 100  # ms
+noise_gate = 5000  # specific noise gate value
 # if 0, the program will calculate
 # according to ng_rate
 # if not 0, it use the given value
+# generally, when testing rock-file materials
+# suggest 1000
 drop_range = 0.1
 fliter_range = [10, 1000]
 #####
