@@ -6,7 +6,34 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import sys
+
+from amm import amm
+
+import matplotlib
+matplotlib.use("Qt5Agg")  # claim qt5 agg.
+# very import to keep matplotlib.use before any matplot or qt sub-import
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+# 继承FigureCanvas  很关键
+class Figure_Canvas(FigureCanvas):
+
+    def __init__(self, parent=None, width=7, height=1.2, dpi=100):
+        # 创建一个Figure，注意：该Figure为matplotlib下的figure，不是matplotlib.pyplot下面的figure
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        fig.set_tight_layout(True)
+
+        FigureCanvas.__init__(self, fig)  # 初始化父类
+        self.setParent(parent)
+
+        # 调用figure下面的add_subplot方法，类似于matplotlib.pyplot下面的subplot方法
+        self.axes = fig.add_subplot(111)
+
+    def visulizer(self, x, y):
+        self.axes.plot(x, y)
 
 
 class Ui_Dialog(object):
@@ -90,10 +117,10 @@ class Ui_Dialog(object):
         self.graphicsView.setGeometry(QtCore.QRect(60, 20, 711, 131))
         self.graphicsView.setObjectName("graphicsView")
         self.graphicsView_2 = QtWidgets.QGraphicsView(Dialog)
-        self.graphicsView_2.setGeometry(QtCore.QRect(60, 380, 711, 131))
+        self.graphicsView_2.setGeometry(QtCore.QRect(60, 200, 711, 131))
         self.graphicsView_2.setObjectName("graphicsView_2")
         self.graphicsView_3 = QtWidgets.QGraphicsView(Dialog)
-        self.graphicsView_3.setGeometry(QtCore.QRect(60, 200, 711, 131))
+        self.graphicsView_3.setGeometry(QtCore.QRect(60, 380, 711, 131))
         self.graphicsView_3.setObjectName("graphicsView_3")
         self.lineEdit = QtWidgets.QLineEdit(Dialog)
         self.lineEdit.setGeometry(QtCore.QRect(880, 40, 101, 31))
@@ -190,15 +217,38 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.lineEdit_3, self.lineEdit_2)
         Dialog.setTabOrder(self.lineEdit_2, self.pushButton)
         Dialog.setTabOrder(self.pushButton, self.graphicsView)
-        Dialog.setTabOrder(self.graphicsView, self.graphicsView_3)
-        Dialog.setTabOrder(self.graphicsView_3, self.graphicsView_2)
+        Dialog.setTabOrder(self.graphicsView, self.graphicsView_2)
+        Dialog.setTabOrder(self.graphicsView_2, self.graphicsView_3)
 
-        self.pushButton.clicked(self.geo_sonic)
+        # creat connection between gui and python code
+        self.pushButton.clicked.connect(self.amm_test)
 
-    def geo_sonic(self):
-        
+    def amm_test(self):
+        amm_sample = amm()
+        amm_sample.run_test()
+
+        f1 = Figure_Canvas()
+        f1.visulizer(amm_sample.sonic_x, amm_sample.sonic_y)
+        graphicscene = QtWidgets.QGraphicsScene()
+        graphicscene.addWidget(f1)
+        self.graphicsView.setScene(graphicscene)
+
+        f2 = Figure_Canvas()
+        f2.visulizer(amm_sample.x * 1000, amm_sample.y)
+        graphicscene_2 = QtWidgets.QGraphicsScene()
+        graphicscene_2.addWidget(f2)
+        self.graphicsView_2.setScene(graphicscene_2)
+
+        f3 = Figure_Canvas()
+        f3.visulizer(amm_sample.fft_x, amm_sample.fft_y)
+        graphicscene_3 = QtWidgets.QGraphicsScene()
+        graphicscene_3.addWidget(f3)
+        self.graphicsView_3.setScene(graphicscene_3)
 
     def retranslateUi(self, Dialog):
+        import yaml
+        f = open('config.yaml')
+        config = yaml.load(f)
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.label.setText(_translate("Dialog", "采样率"))
@@ -213,7 +263,8 @@ class Ui_Dialog(object):
         self.label_10.setText(_translate("Dialog", "Hz"))
         self.label_11.setText(_translate("Dilaog", "上限频率"))
         self.pushButton.setText(_translate("Dialog", "开始检测"))
-        self.lineEdit.setText(_translate("Dialog", "2048"))
+        self.lineEdit.setText(_translate(
+            "Dialog", '{}'.format(config['RATE'])))
         self.lineEdit_2.setText(_translate("Dialog", "1000"))
         self.lineEdit_3.setText(_translate("Dialog", "10"))
         self.lineEdit_4.setText(_translate("Dialog", "500"))
@@ -228,7 +279,6 @@ class Ui_Dialog(object):
 
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_Dialog()

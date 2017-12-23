@@ -1,0 +1,6 @@
+RATE: 2048
+TIME: 2
+FFT_size: 700
+Noise_gate: 500
+low_lim: 10
+hight_lim: 1000
