@@ -1,5 +1,4 @@
 # This program works in python 3
-import os
 
 # modules for signal recorder
 import wave
@@ -9,7 +8,7 @@ import time  # time for time tag
 # modules for fft analysis
 from scipy.io import wavfile
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 class amm(object):
@@ -109,26 +108,26 @@ class amm(object):
         return self.sonic_x, self.sonic_y,\
             self.x, self.y, self.fft_x, self.fft_y, self.peak_freq
 
-    # def visualizer(self):
-    #     figure = plt.figure(figsize=(6, 6))
+    def visualizer(self):
+        figure = plt.figure(figsize=(6, 6))
 
-    #     figure1 = figure.add_subplot(311)
-    #     figure1.plot(self.sonic_x, self.sonic_y)
+        figure1 = figure.add_subplot(311)
+        figure1.plot(self.sonic_x, self.sonic_y)
 
-    #     figure2 = figure.add_subplot(312)
-    #     figure2.plot(self.x * 1000, self.y)
-    #     figure2.set_xlabel(r'Time ($ms$)')
-    #     figure2.set_ylabel('Amplitude')
+        figure2 = figure.add_subplot(312)
+        figure2.plot(self.x * 1000, self.y)
+        figure2.set_xlabel(r'Time ($ms$)')
+        figure2.set_ylabel('Amplitude')
 
-    #     figure3 = figure.add_subplot(313)
-    #     figure3.set_xlabel(r'frequency ($Hz$)')
-    #     figure3.set_ylabel('Amplitude')
-    #     figure3.semilogx(self.fft_x, self.fft_y)
+        figure3 = figure.add_subplot(313)
+        figure3.set_xlabel(r'frequency ($Hz$)')
+        figure3.set_ylabel('Amplitude')
+        figure3.semilogx(self.fft_x, self.fft_y)
 
-    #     figure.suptitle('peak_freq = {}Hz'.format(self.peak_freq))
+        figure.suptitle('peak_freq = {}Hz'.format(self.peak_freq))
 
-    #     plt.show()
-    #     return
+        plt.show()
+        return
 
     def run_test(self):
         self.get_signal()
@@ -136,9 +135,9 @@ class amm(object):
         # self.visualizer()
 
 
-
 if __name__ == '__main__':
     amm_signal = amm()
+    amm_signal.RECORD_SECONDS = 1
     amm_signal.run_test()
 
     import os

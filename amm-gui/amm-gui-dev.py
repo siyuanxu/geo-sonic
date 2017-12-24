@@ -322,7 +322,8 @@ class Ui_Dialog(object):
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
         self.start_layout.addWidget(self.line_3)
-        self.start_test_button = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.start_test_button = QtWidgets.QPushButton(
+            self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.start_test_button.setFont(font)
@@ -364,9 +365,12 @@ class Ui_Dialog(object):
         self.work()
 
     def retranslateUi(self, Dialog):
+        # load config.yaml file
+        self.config_yaml()
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label_18.setText(_translate("Dialog", "Geo-sonic V1.0 AMM module V1.2 Copyright Siyuan Xu"))
+        self.label_18.setText(_translate(
+            "Dialog", "Geo-sonic V1.0 AMM module V1.2 Copyright Siyuan Xu"))
         self.cal_m0_button.setText(_translate("Dialog", "计算堆石体参振质量 m0"))
         self.label_19.setText(_translate("Dialog", "荷载级1"))
         self.label_20.setText(_translate("Dialog", "荷载级4"))
@@ -382,19 +386,23 @@ class Ui_Dialog(object):
         self.label_8.setText(_translate("Dialog", "触发限"))
         self.label_10.setText(_translate("Dialog", "Hz"))
         self.label_4.setText(_translate("Dialog", "总时长"))
-        self.low_lim_box.setText(_translate("Dialog", "10"))
-        self.TIME_box.setText(_translate("Dialog", "2"))
+        self.low_lim_box.setText(_translate(
+            "Dialog", "{}".format(self.low_lim)))
+        self.TIME_box.setText(_translate("Dialog", "{}".format(self.TIME)))
         self.label_6.setText(_translate("Dialog", "FFT size"))
-        self.RATE_box.setText(_translate("Dialog", "2048"))
-        self.FFT_size_box.setText(_translate("Dialog", "700"))
+        self.RATE_box.setText(_translate("Dialog", "{}".format(self.RATE)))
+        self.FFT_size_box.setText(_translate(
+            "Dialog", "{}".format(self.FFT_size)))
         self.label_5.setText(_translate("Dialog", "毫秒"))
         self.label_3.setText(_translate("Dialog", "秒"))
-        self.high_lim_box.setText(_translate("Dialog", "1000"))
+        self.high_lim_box.setText(_translate(
+            "Dialog", "{}".format(self.hight_lim)))
         self.label.setText(_translate("Dialog", "采样率"))
         self.label_9.setText(_translate("Dialog", "下限频率"))
         self.label_7.setText(_translate("Dialog", "Hz"))
         self.label_2.setText(_translate("Dialog", "Hz"))
-        self.noise_gate_box.setText(_translate("Dialog", "500"))
+        self.noise_gate_box.setText(_translate(
+            "Dialog", "{}".format(self.Noise_gate)))
         self.label_16.setText(_translate("Dialog", "A"))
         self.label_15.setText(_translate("Dialog", "A"))
         self.label_13.setText(_translate("Dialog", "t (ms)"))
@@ -402,21 +410,35 @@ class Ui_Dialog(object):
         self.label_14.setText(_translate("Dialog", "freqs (Hz)"))
         self.label_12.setText(_translate("Dialog", "t (s)"))
         self.start_test_button.setText(_translate("Dialog", "开始检测"))
-        self.output_browser.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">欢迎使用Geo-sonic系列软件 AMM振动检测模块 ================= 开始检测之后，请依照本窗口指令进行激励操作</p></body></html>"))
-
+        self.output_browser.setText(_translate('Dialog', '欢迎使用Geo-sonic系列软件AMM振动检测模块 \
+            ============== \
+            开始检测之后，请依照本窗口指令进行激励操作'))
 
     def work(self):
         # start amm test
-        peak_freq = self.start_test_button.clicked.connect(self.start_test)
-        # save results
-        self.write_1.clicked.connect(self.write_res(self.res_box_1,peak_freq))
+        self.start_test_button.clicked.connect(self.start_test)
+        print(type(self.noise_gate_box.text()))
+
+    def config_yaml(self):
+        config = yaml.load(open('config.yaml'))
+
+        self.RATE = config['RATE']
+        self.TIME = config['TIME']
+        self.FFT_size = config['FFT_size']
+        self.Noise_gate = config['Noise_gate']
+        self.low_lim = config['low_lim']
+        self.hight_lim = config['hight_lim']
 
     def start_test(self):
         amm_sample = amm()
+
+        amm_sample.RATE = int(self.RATE_box.text())
+        amm_sample.RECORD_SECONDS = float(self.TIME_box.text())
+        amm_sample.FFT_size = int(self.FFT_size_box.text())
+        amm_sample.noise_gate = int(self.noise_gate_box.text())
+        amm_sample.low_lim = int(self.low_lim_box.text())
+        amm_sample.hight_lim = int(self.high_lim_box.text())
+
         amm_sample.run_test()
 
         # 创建工作绘图对象
@@ -441,12 +463,9 @@ class Ui_Dialog(object):
 
         return amm_sample.peak_freq
 
-    def write_res(self,res_box,data):
-        # TODO
-        res_box.append(data)
-
-
 # 绘图功能实现
+
+
 class visualizer(FigureCanvas):
     def __init__(self, parent=None, width=7.5, height=1.3, dpi=100):
         # 创建一个Figure，注意：该Figure为matplotlib下的figure，不是matplotlib.pyplot下面的figure

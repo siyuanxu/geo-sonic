@@ -42,8 +42,15 @@ def stdout_load():
         print('1111111')
         f.write()
 
-
+class aaa(object):
+    """docstring for aaa"""
+    def __init__(self):
+        super(aaa, self).__init__()
+        self.b = 1
+        
 
 
 if __name__ == '__main__':
-    stdout_load()
+    a = aaa()
+    # a.b = 2
+    print(a.b)

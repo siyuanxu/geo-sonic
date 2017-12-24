@@ -137,6 +137,7 @@ class amm(object):
 
 if __name__ == '__main__':
     amm_signal = amm()
+    amm_signal.RECORD_SECONDS=1
     amm_signal.run_test()
 
     import os

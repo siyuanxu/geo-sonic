@@ -17,7 +17,7 @@ Geo-sonic 是本人正在开发的一个使用声音信号来分析岩土工作�
 - 对采集的信号进行截取和过滤，对受到激励的部分进行 FFT 计算，得到准确的响应主频
 - 记录不同附加质量下的响应频率，得到 $\Delta D - m$ 曲线
 - 采用神经网络或者数字量板计算材料的密度
-- 将代码封装为qt gui
+- 将代码封装为qt GUI
 
 ## AMM 第一次野外试验
 
@@ -192,7 +192,37 @@ self.pushButton.clicked.connect(self.amm_test)
   ~~~
 
 
-  pyqt中的图形呈现还是比较复杂的，这里是先创造了图形对象，把图形对象放到graphicscene里面，再把graphicscene设置到gui中的绘图区域组件中。
+pyqt中的图形呈现还是比较复杂的，这里是先创造了图形对象，把图形对象放到graphicscene里面，再把graphicscene设置到gui中的绘图区域组件中。
+
+### 工作代码读取gui输入的信息
+
+在这个项目中，我希望能够在gui中修改工作代码的运行参数，那么就需要在运行程序时获取gui文本框组件的实时内容，方法很简单，如下：
+
+~~~python
+now_text = self.text_box.text()
+~~~
+
+### 使用了 yaml 控制文件来对gui界面的初始设置进行管理
+
+本项目中的一些参数原本是设置在gui代码中的，就是retranslateui 部分。我预期的效果是可以针对不同的工程采用不同的预制文件，但是每次都修改gui代码显然是不现实的，所以我使用了 yaml 文件来进行控制。yaml 文件可以被python作为一个dict载入。一个配置好的yaml文件如下：**don't forget the space after :**
+
+~~~yaml
+foo1: bar1
+foo2: bar2
+~~~
+
+在 pip 安装pyyaml库后，可以使用load函数载入yaml文件：
+
+~~~python
+import yaml
+config = yaml.load(open(config.yaml))
+~~~
+
+那么对于获得的dict对象操作就简单了。
+
+~~~python
+foo1_para = config['foo1']
+~~~
 
 ### python 命令行输出内容在 gui 中的显示
 
@@ -201,3 +231,4 @@ self.pushButton.clicked.connect(self.amm_test)
 暂时无法解决。
 
 ### 更多的button操作
+
