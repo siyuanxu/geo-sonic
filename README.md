@@ -1,4 +1,4 @@
-# Geo-sonic
+# Geo-sonic 开发记录
 
 ## 前言
 
@@ -194,7 +194,7 @@ self.pushButton.clicked.connect(self.amm_test)
 
 pyqt中的图形呈现还是比较复杂的，这里是先创造了图形对象，把图形对象放到graphicscene里面，再把graphicscene设置到gui中的绘图区域组件中。
 
-### 工作代码读取gui输入的信息
+### 文本区域的使用 ---> 工作代码读取gui输入的信息
 
 在这个项目中，我希望能够在gui中修改工作代码的运行参数，那么就需要在运行程序时获取gui文本框组件的实时内容，方法很简单，如下：
 
@@ -230,5 +230,59 @@ foo1_para = config['foo1']
 
 暂时无法解决。
 
-### 更多的button操作
+### 文本对象的重设、更新
+
+pyqt5中的文本对象操作很简洁，这里我用到了 setText 以及 insert 函数来显示运行结果并更新记录
+
+需要注意的是，在子函数中使用settext 和insert等函数时，需要加入 _translate。完整代码如下：
+
+~~~python
+_translate = QtCore.QCoreApplication.translate
+self.foo.setText(_translate('Dialog','foobar')) # like write
+self.foo.insert(_translate('Dialog','foobar')) # like append
+~~~
+
+### Connect 出现error
+
+错误代码：
+
+~~~python
+self.button.clicked.connect(self.func())
+~~~
+
+上面写的时self.func() 加了括号就是函数的返回结果，不加括号就是函数。晕了好久。
+
+### 设置启动界面和程序图标
+
+通过QtWidgets.QSplashScreen来进行设置启动界面，
+
+~~~python
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    splashscreen = QtWidgets.QSplashScreen(QtGui.QPixmap('logo.png'))
+    splashscreen.show()
+    import time
+    time.sleep(1) # 由于时小软件，启动很快，所以这里要设置一个暂停
+    splashscreen.finish(splashscreen)
+    MainWindow = QtWidgets.QMainWindow()
+    icon = QtGui.QIcon()
+    icon.addPixmap(QtGui.QPixmap("icon.png"),QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    MainWindow.setWindowIcon(icon)
+    ui = Ui_Dialog()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
+~~~
+
+### 设置window title
+
+在retranslateui 部分
+
+~~~python
+Dialog.setWindowTitle(_translate("Dialog", "Geo-sonic AMM"))
+~~~
+
+
+
+
 

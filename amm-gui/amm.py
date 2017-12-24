@@ -133,12 +133,14 @@ class amm(object):
         self.get_signal()
         self.fft_analyzer()
         # self.visualizer()
+        import os
+        os.system('rm *.wav')
 
 
 if __name__ == '__main__':
-    amm_signal = amm()
-    amm_signal.RECORD_SECONDS = 1
-    amm_signal.run_test()
+    # amm_signal = amm()
+    # amm_signal.RECORD_SECONDS = 1
+    # amm_signal.run_test()
 
     import os
     os.system('rm *.wav')

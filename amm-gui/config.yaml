@@ -1,6 +1,7 @@
-RATE: 2049
-TIME: 2
-FFT_size: 700
+# this config file is for dev usage
+RATE: 2048
+TIME: 0.5
+FFT_size: 100
 Noise_gate: 500
 low_lim: 10
 hight_lim: 1000

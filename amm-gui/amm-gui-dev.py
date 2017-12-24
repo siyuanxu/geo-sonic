@@ -336,6 +336,14 @@ class Ui_Dialog(object):
         self.output_browser.setFont(font)
         self.output_browser.setObjectName("output_browser")
         self.start_layout.addWidget(self.output_browser)
+        # add a widget by hand
+        self.peak_freq_browser = QtWidgets.QLineEdit(
+            self.verticalLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        self.peak_freq_browser.setFont(font)
+        self.peak_freq_browser.setObjectName("peak_freq_browser")
+        self.start_layout.addWidget(self.peak_freq_browser)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -362,13 +370,13 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.res_box_5, self.cal_m0_button)
 
         # connect working code
-        self.work()
+        self.work(Dialog)
 
     def retranslateUi(self, Dialog):
         # load config.yaml file
         self.config_yaml()
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Geo-sonic AMM"))
         self.label_18.setText(_translate(
             "Dialog", "Geo-sonic V1.0 AMM module V1.2 Copyright Siyuan Xu"))
         self.cal_m0_button.setText(_translate("Dialog", "计算堆石体参振质量 m0"))
@@ -410,14 +418,22 @@ class Ui_Dialog(object):
         self.label_14.setText(_translate("Dialog", "freqs (Hz)"))
         self.label_12.setText(_translate("Dialog", "t (s)"))
         self.start_test_button.setText(_translate("Dialog", "开始检测"))
-        self.output_browser.setText(_translate('Dialog', '欢迎使用Geo-sonic系列软件AMM振动检测模块 \
-            ============== \
-            开始检测之后，请依照本窗口指令进行激励操作'))
+        self.output_browser.setText(_translate(
+            'Dialog', '欢迎使用Geo-sonic系列软件AMM振动检测模块'))
 
-    def work(self):
+    def work(self, Dialog):
         # start amm test
         self.start_test_button.clicked.connect(self.start_test)
-        print(type(self.noise_gate_box.text()))
+
+        # write results
+        self.write_1.clicked.connect(self.write_res_1)
+        self.write_2.clicked.connect(self.write_res_2)
+        self.write_3.clicked.connect(self.write_res_3)
+        self.write_4.clicked.connect(self.write_res_4)
+        self.write_5.clicked.connect(self.write_res_5)
+
+        # calculate m0
+        self.cal_m0_button.clicked.connect(self.cal_m0)
 
     def config_yaml(self):
         config = yaml.load(open('config.yaml'))
@@ -429,15 +445,19 @@ class Ui_Dialog(object):
         self.low_lim = config['low_lim']
         self.hight_lim = config['hight_lim']
 
-    def start_test(self):
+    def start_test(self, Dialog):
         amm_sample = amm()
 
         amm_sample.RATE = int(self.RATE_box.text())
         amm_sample.RECORD_SECONDS = float(self.TIME_box.text())
-        amm_sample.FFT_size = int(self.FFT_size_box.text())
+        amm_sample.fft_time = int(self.FFT_size_box.text())
         amm_sample.noise_gate = int(self.noise_gate_box.text())
         amm_sample.low_lim = int(self.low_lim_box.text())
         amm_sample.hight_lim = int(self.high_lim_box.text())
+
+        amm_sample.CHUNK = int(amm_sample.RATE / 50)
+        amm_sample.fft_size = int(
+            (amm_sample.fft_time / 1000) * amm_sample.RATE)
 
         amm_sample.run_test()
 
@@ -450,7 +470,7 @@ class Ui_Dialog(object):
         self.figure_1.setScene(gs1)
 
         f2 = visualizer()
-        f2.visualizer(amm_sample.x, amm_sample.y)
+        f2.visualizer(amm_sample.x * 1000, amm_sample.y)
         gs2 = QtWidgets.QGraphicsScene()
         gs2.addWidget(f2)
         self.figure_2.setScene(gs2)
@@ -461,11 +481,97 @@ class Ui_Dialog(object):
         gs3.addWidget(f3)
         self.figure_3.setScene(gs3)
 
-        return amm_sample.peak_freq
+        # print peak freq in outputbrowser
+        _translate = QtCore.QCoreApplication.translate
+        self.output_browser.setText(_translate(
+            'Dialog', '欢迎使用Geo-sonic系列软件AMM振动检测模块\
+            本次锤击测得主频为'))
+        self.peak_freq_browser.setText(_translate(
+            'Dialog', '{}Hz'.format(round(amm_sample.peak_freq, 2))))
+
+    def write_res_1(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.res_box_1.insert(_translate(
+            'Dialog', '{}'.format(self.peak_freq_browser.text())))
+
+    def write_res_2(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.res_box_2.insert(_translate(
+            'Dialog', '{}'.format(self.peak_freq_browser.text())))
+
+    def write_res_3(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.res_box_3.insert(_translate(
+            'Dialog', '{}'.format(self.peak_freq_browser.text())))
+
+    def write_res_4(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.res_box_4.insert(_translate(
+            'Dialog', '{}'.format(self.peak_freq_browser.text())))
+
+    def write_res_5(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        self.res_box_5.insert(_translate(
+            'Dialog', '{}'.format(self.peak_freq_browser.text())))
+
+    def cal_m0(self):
+        import numpy as np
+        import matplotlib.pyplot as plt
+        from scipy import optimize
+        import time
+
+        def accurate_res(a):
+            # a should be a textedit.text()
+            b = a.split('Hz')[:-1]
+            return [float(i) for i in b]
+
+        def one_freq(a):
+            # a should be a list of freqs
+            a.remove(max(a))
+            a.remove(min(a))
+
+            return float(np.mean(a))
+
+        def linear_fit(x, k, b):
+            return k * x + b
+
+        res_1 = accurate_res(self.res_box_1.text())
+        res_2 = accurate_res(self.res_box_2.text())
+        res_3 = accurate_res(self.res_box_3.text())
+        res_4 = accurate_res(self.res_box_4.text())
+        res_5 = accurate_res(self.res_box_5.text())
+
+        freq_1 = one_freq(res_1)
+        freq_2 = one_freq(res_2)
+        freq_3 = one_freq(res_3)
+        freq_4 = one_freq(res_4)
+        freq_5 = one_freq(res_5)
+
+        delta_ms = np.array([150, 225, 300, 375, 450])
+        freqs = np.array([freq_1, freq_2, freq_3, freq_4, freq_5])
+        D = (2 * np.pi * freqs)**(-2) * (1000000)
+
+        k, b = optimize.curve_fit(linear_fit, delta_ms, D)[0]
+
+        m0 = b / k
+        x = np.array([-m0, max(delta_ms)])
+        y = linear_fit(x, k, b)
+
+        results = np.vstack([delta_ms, freqs]).T
+        np.savetxt('{}.dat'.format(time.strftime(
+            "%Y-%m-%d_%H-%M-%S", time.localtime())), results)
+
+        plt.scatter(delta_ms, D)
+        plt.title('m0 = {} Kg'.format(m0))
+        plt.xlabel('Additional mess delta m (Kg)')
+        plt.ylabel('Para D (ms^-2)')
+
+        plt.plot(x, y)
+        plt.show()
+        plt.savefig('{}.png'.format(time.strftime(
+            "%Y-%m-%d_%H-%M-%S", time.localtime())), dpi=120)
 
 # 绘图功能实现
-
-
 class visualizer(FigureCanvas):
     def __init__(self, parent=None, width=7.5, height=1.3, dpi=100):
         # 创建一个Figure，注意：该Figure为matplotlib下的figure，不是matplotlib.pyplot下面的figure
@@ -484,7 +590,15 @@ class visualizer(FigureCanvas):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    splashscreen = QtWidgets.QSplashScreen(QtGui.QPixmap('splash.png'))
+    splashscreen.show()
+    import time
+    time.sleep(1)
+    splashscreen.finish(splashscreen)
     MainWindow = QtWidgets.QMainWindow()
+    icon = QtGui.QIcon()
+    icon.addPixmap(QtGui.QPixmap("icon_small.png"),QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    MainWindow.setWindowIcon(icon)
     ui = Ui_Dialog()
     ui.setupUi(MainWindow)
     MainWindow.show()
