@@ -378,7 +378,7 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Geo-sonic AMM"))
         self.label_18.setText(_translate(
-            "Dialog", "Geo-sonic V1.0 AMM module V1.2 Copyright Siyuan Xu"))
+            "Dialog", "Geo-sonic V1.0 AMM module"))
         self.cal_m0_button.setText(_translate("Dialog", "计算堆石体参振质量 m0"))
         self.label_19.setText(_translate("Dialog", "荷载级1"))
         self.label_20.setText(_translate("Dialog", "荷载级4"))
@@ -436,14 +436,21 @@ class Ui_Dialog(object):
         self.cal_m0_button.clicked.connect(self.cal_m0)
 
     def config_yaml(self):
-        config = yaml.load(open('config.yaml'))
-
-        self.RATE = config['RATE']
-        self.TIME = config['TIME']
-        self.FFT_size = config['FFT_size']
-        self.Noise_gate = config['Noise_gate']
-        self.low_lim = config['low_lim']
-        self.hight_lim = config['hight_lim']
+        if os.path.exists('config.yaml'):
+            config = yaml.load(open('config.yaml'))
+            self.RATE = config['RATE']
+            self.TIME = config['TIME']
+            self.FFT_size = config['FFT_size']
+            self.Noise_gate = config['Noise_gate']
+            self.low_lim = config['low_lim']
+            self.hight_lim = config['hight_lim']
+        else:
+            self.RATE = 2048
+            self.TIME = 2
+            self.FFT_size = 700
+            self.Noise_gate = 500
+            self.low_lim = 10
+            self.hight_lim = 1000
 
     def start_test(self, Dialog):
         amm_sample = amm()
@@ -572,6 +579,8 @@ class Ui_Dialog(object):
             "%Y-%m-%d_%H-%M-%S", time.localtime())), dpi=120)
 
 # 绘图功能实现
+
+
 class visualizer(FigureCanvas):
     def __init__(self, parent=None, width=7.5, height=1.3, dpi=100):
         # 创建一个Figure，注意：该Figure为matplotlib下的figure，不是matplotlib.pyplot下面的figure
@@ -597,7 +606,8 @@ if __name__ == "__main__":
     splashscreen.finish(splashscreen)
     MainWindow = QtWidgets.QMainWindow()
     icon = QtGui.QIcon()
-    icon.addPixmap(QtGui.QPixmap("icon_small.png"),QtGui.QIcon.Normal, QtGui.QIcon.Off)
+    icon.addPixmap(QtGui.QPixmap("icon_small.png"),
+                   QtGui.QIcon.Normal, QtGui.QIcon.Off)
     MainWindow.setWindowIcon(icon)
     ui = Ui_Dialog()
     ui.setupUi(MainWindow)
