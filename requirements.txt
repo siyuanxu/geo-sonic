@@ -2,5 +2,6 @@ numpy
 matplotlib
 scipy
 pyaudio
-seaborn
 wave
+PyQt5
+pyyaml
